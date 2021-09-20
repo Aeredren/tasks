@@ -36,7 +36,9 @@ License along with this library. If not, see <http://www.gnu.org/licenses/>.
 				<DashboardWidgetItem
 					:main-text="item.summary"
 					:sub-text="formatSubtext(item)"
-					:target-url="getTasksAppUrl(item)">
+					:target-url="getTasksAppUrl(item)"
+					:item-menu="itemMenu"
+					@markAsDone="onMarkAsDone(item)">
 					<template #avatar>
 						<div
 							class="calendar-dot"
@@ -63,7 +65,7 @@ import { generateUrl } from '@nextcloud/router'
 import { DashboardWidget, DashboardWidgetItem } from '@nextcloud/vue-dashboard'
 import { translate as t } from '@nextcloud/l10n'
 
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 
 export default {
 	name: 'Dashboard',
@@ -77,6 +79,12 @@ export default {
 			loading: true,
 			tasks: [],
 			showAddTaskModal: false,
+			itemMenu: {
+				markAsDone: {
+					text: t('app', 'Mark as done'),
+					icon: 'icon-checkmark',
+				},
+			},
 		}
 	},
 	computed: {
@@ -91,6 +99,11 @@ export default {
 		this.initializeEnvironment()
 	},
 	methods: {
+
+		...mapActions([
+			'toggleCompleted',
+		]),
+
 		async initializeEnvironment() {
 			await client.connect({ enableCalDAV: true })
 			await this.$store.dispatch('fetchCurrentUserPrincipal')
@@ -174,6 +187,11 @@ export default {
 
 		toggleAddTaskModel() {
 			this.showAddTaskModal = !this.showAddTaskModal
+		},
+
+		onMarkAsDone(item) {
+			this.toggleCompleted(item)
+			this.fetchTasks()
 		},
 	},
 
