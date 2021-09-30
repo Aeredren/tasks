@@ -89,11 +89,27 @@ License along with this library. If not, see <http://www.gnu.org/licenses/>.
 							<p v-if="retentionDuration">
 								{{ n('calendar', 'Elements in the trash bin are deleted after {numDays} day', 'Elements in the trash bin are deleted after {numDays} days', retentionDuration, { numDays: retentionDuration }) }}
 							</p>
-							<button @click="onEmptyTrashBin(items)">
+							<button @click="showConfirmationModal = true">
 								{{ t('tasks','Empty trash bin') }}
 							</button>
 						</div>
 					</template>
+				</div>
+			</Modal>
+			<Modal v-if="showConfirmationModal"
+				size="small"
+				@close="showConfirmationModal = false">
+				<div class="confirmation">
+					<h2>{{ t('tasks','Confirm delete') }}</h2>
+					<p>{{ t('tasks','Do you really want to empty the trash bin?') }}</p>
+					<div class="yes-no-button">
+						<button @click="showConfirmationModal = false">
+							{{ t('tasks','No') }}
+						</button>
+						<button @click="onEmptyTrashBin(items)">
+							{{ t('tasks','Yes') }}
+						</button>
+					</div>
 				</div>
 			</Modal>
 		</template>
@@ -132,6 +148,7 @@ export default {
 	data() {
 		return {
 			showModal: false,
+			showConfirmationModal: false,
 			loading: true,
 		}
 	},
@@ -260,14 +277,15 @@ export default {
 			items.forEach((item) => {
 				this.onDeletePermanently(item)
 			})
+			this.showConfirmationModal = false
 		},
 	},
 }
 </script>
 
 <style lang="scss" scoped>
-::v-deep .modal-container {
-	height: 80%;
+::v-deep .empty-content {
+	margin: 20vh auto ;
 }
 
 .modal__content {
@@ -276,6 +294,19 @@ export default {
 	margin: 2vw;
 	height: calc(100% - 4vw);
 	max-height: calc(100% - 4vw);
+}
+
+.confirmation {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	margin: 2vw;
+	& .yes-no-button {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		margin-top: 2em;
+	}
 }
 
 .table {
